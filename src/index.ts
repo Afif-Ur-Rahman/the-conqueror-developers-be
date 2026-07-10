@@ -15,14 +15,14 @@ if (missingVars.length > 0) {
 }
 
 // Database setup
-connectDB();
+connectDB()
+  .then(() => {
+    const port: number = parseInt(PORT as string, 10) || 4000;
 
-// Server setup
-const port: number = parseInt(PORT as string, 10) || 4000;
-server.listen(port, () => {
-  console.error(LOGUI.FgYellow, `Serving on port ${port}`);
-});
-
-server.on("error", (error: NodeJS.ErrnoException) => {
-  console.error(LOGUI.FgRed, error);
-});
+    server.listen(port, () => {
+      console.log(LOGUI.FgYellow, `Server running on port ${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to connect to database. Server not started.", err);
+  });

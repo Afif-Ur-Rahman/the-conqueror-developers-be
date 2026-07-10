@@ -1,1 +1,1 @@
-export * from "./otp-email-template";
+export * from "./email-template";

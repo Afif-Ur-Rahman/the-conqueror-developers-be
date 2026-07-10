@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 
+import { sendEmail } from "@/config";
+import { leadNotificationTemplate } from "@/templates";
+
 import { Lead } from "../model";
 
 export const createLead = async (req: Request, res: Response) => {
@@ -7,6 +10,19 @@ export const createLead = async (req: Request, res: Response) => {
     const { email, name, phone, message } = req.body;
 
     const lead = await Lead.create({ email, name, phone, message });
+
+    const mailInfo = {
+      to: "theconqueror.office@gmail.com",
+      subject: `New Lead: ${name}`,
+      html: leadNotificationTemplate({
+        name,
+        email,
+        phone,
+        message,
+      }),
+    };
+
+    if (lead) await sendEmail(mailInfo);
 
     return res.status(201).json({
       success: true,
