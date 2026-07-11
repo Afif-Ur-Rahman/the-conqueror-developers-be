@@ -1,10 +1,14 @@
 import { Router } from "express";
 
 import { rateLimiter } from "@/middlewares/security-middleware";
-import { userRoutes, profileRoutes } from "@/modules";
+import {
+  userRoutes,
+  profileRoutes,
+  leadsRoutes,
+  customerRoutes,
+  unitInformationRoutes,
+} from "@/modules";
 import { authRoutes } from "@/modules/auth/routes";
-import { customerRoutes } from "@/modules/customers";
-import { leadsRoutes } from "@/modules/leads";
 
 const router = Router();
 
@@ -20,5 +24,7 @@ router.use("/api/profile", profileRoutes);
 router.use("/api/leads", leadsRoutes);
 
 router.use("/api/customers", customerRoutes);
+
+router.use("/api/unit-information", unitInformationRoutes);
 
 export { router as routes };

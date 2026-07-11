@@ -9,7 +9,7 @@ export const generateRegistrationNumber = (): number => {
 
 export const createCustomer = async (req: Request, res: Response) => {
   try {
-    const { cnic, name, fatherName, address, phone, email, unitInformation } = req.body;
+    const { cnic, name, fatherName, address, phone, email } = req.body;
 
     const customer = await Customer.create({
       registrationNumber: generateRegistrationNumber(),
@@ -19,7 +19,6 @@ export const createCustomer = async (req: Request, res: Response) => {
       address,
       phone,
       email,
-      unitInformation,
     });
 
     return res.status(201).json({
@@ -44,7 +43,7 @@ export const createCustomer = async (req: Request, res: Response) => {
 
 export const getCustomers = async (_req: Request, res: Response) => {
   try {
-    const customers = await Customer.find().sort({ createdAt: -1 });
+    const customers = await Customer.find().populate("unitInformation").sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -63,11 +62,12 @@ export const updateCustomer = async (req: Request, res: Response) => {
     const { id } = req.params;
     const customerData = req.body;
     delete customerData.registrationNumber;
+    delete customerData.unitInformation;
 
     const customer = await Customer.findByIdAndUpdate(id, customerData, {
       new: true,
       runValidators: true,
-    });
+    }).populate("unitInformation");
 
     if (!customer) {
       return res.status(404).json({
