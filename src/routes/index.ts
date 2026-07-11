@@ -7,6 +7,7 @@ import {
   leadsRoutes,
   customerRoutes,
   unitInformationRoutes,
+  paymentRoutes,
 } from "@/modules";
 import { authRoutes } from "@/modules/auth/routes";
 
@@ -26,5 +27,7 @@ router.use("/api/leads", leadsRoutes);
 router.use("/api/customers", customerRoutes);
 
 router.use("/api/unit-information", unitInformationRoutes);
+
+router.use("/api/payments", paymentRoutes);
 
 export { router as routes };
