@@ -13,6 +13,8 @@ export interface IUser extends Document {
   createdAt?: Date;
   updatedAt?: Date;
   rememberMe?: boolean;
+  isDeleted?: boolean;
+  deletedAt?: Date;
 }
 
 interface IUserMethods {
@@ -51,6 +53,14 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
     rememberMe: {
       type: Boolean,
       default: false,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
     },
   },
   {

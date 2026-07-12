@@ -8,6 +8,7 @@ import {
   customerRoutes,
   unitInformationRoutes,
   paymentRoutes,
+  employeeRoutes,
 } from "@/modules";
 import { authRoutes } from "@/modules/auth/routes";
 
@@ -21,6 +22,8 @@ router.use("/api/auth", rateLimiter, authRoutes);
 router.use("/api/users", userRoutes);
 
 router.use("/api/profile", profileRoutes);
+
+router.use("/api/employees", employeeRoutes);
 
 router.use("/api/leads", leadsRoutes);
 

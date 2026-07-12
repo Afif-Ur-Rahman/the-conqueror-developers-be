@@ -23,7 +23,9 @@ export const authMiddleware = async (
 
     const decoded = jwt.verify(token, JWT_SECRET as string) as JwtPayload;
 
-    const user = await User.findById(decoded.id).select("-password");
+    const user = await User.findOne({ _id: decoded.id, isDeleted: { $ne: true } }).select(
+      "-password",
+    );
 
     if (!user) {
       throw new Error("Access denied. Invalid token.");
@@ -33,6 +35,7 @@ export const authMiddleware = async (
     next();
   } catch (error: any) {
     res.status(statusCodes.UNAUTHORIZED).json({
+      success: false,
       message: error.message || "Invalid token.",
     });
   }

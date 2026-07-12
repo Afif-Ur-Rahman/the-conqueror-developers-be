@@ -17,7 +17,7 @@ export const login = catchAsync(
     try {
       const { email, password, rememberMe } = req.body;
 
-      const user = await User.findOne({ email }).select("+password");
+      const user = await User.findOne({ email, isDeleted: false }).select("+password");
 
       if (!user) {
         return res.status(statusCodes.NOT_FOUND).json({ message: "Invalid credentials" });
@@ -36,13 +36,14 @@ export const login = catchAsync(
       delete (accountObj as any).__v;
 
       return res.status(statusCodes.OK).json({
+        success: true,
         message: "Login successful. Welcome to the App. 😀🎊 !",
         data: { ...accountObj, token },
       });
     } catch (error: Error | any) {
       return res
         .status(statusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: error.message || "Error logging in", error });
+        .json({ success: false, message: error.message || "Error logging in", error });
     }
   },
 );
