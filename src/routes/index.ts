@@ -15,7 +15,7 @@ import { authRoutes } from "@/modules/auth/routes";
 const router = Router();
 
 router.get("/", (req, res) => {
-  res.json({ message: "Welcome to the restaurant API" });
+  res.json({ message: "Welcome to The Conqueror Developers API" });
 });
 
 router.use("/api/auth", rateLimiter, authRoutes);
