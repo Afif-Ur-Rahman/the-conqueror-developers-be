@@ -30,7 +30,7 @@ export const createCustomer = async (req: Request, res: Response) => {
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
-        message: "Customer with this CNIC or registration number already exists.",
+        message: "Customer with this CNIC already exists.",
       });
     }
 
