@@ -9,7 +9,7 @@ const router = Router();
 
 router.use(authMiddleware);
 
-router.get("/", catchAsync(getUnitInformationByCustomer));
-router.post("/", catchAsync(createUnitInformation));
+router.get("/:customerId", catchAsync(getUnitInformationByCustomer));
+router.post("/:customerId", catchAsync(createUnitInformation));
 
 export { router as unitInformationRoutes };

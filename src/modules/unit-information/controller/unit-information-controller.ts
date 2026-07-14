@@ -28,7 +28,7 @@ export const createUnitInformation = async (req: Request, res: Response) => {
 
     return res.status(201).json({
       success: true,
-      message: "Unit information created successfully",
+      message: "Unit added successfully",
       data: unit,
     });
   } catch (error: any) {
@@ -49,12 +49,20 @@ export const createUnitInformation = async (req: Request, res: Response) => {
 export const getUnitInformationByCustomer = async (req: Request, res: Response) => {
   try {
     const { customerId } = req.params;
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer not found",
+      });
+    }
 
     const units = await UnitInformation.find({ customer: customerId });
 
     return res.status(200).json({
       success: true,
-      data: units,
+      data: { customer, units },
     });
   } catch (error: any) {
     return res.status(500).json({
