@@ -1,8 +1,20 @@
+import { addMonths } from "date-fns";
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 
+import { statusCodes } from "@/constants";
 import { UnitInformation } from "@/modules/unit-information/model";
 
-import { Payment } from "../model";
+import { IPayment, Payment } from "../model";
+
+interface InstallmentsPayload {
+  type: "Installments";
+  dueAmount: number;
+  dueDate: string;
+  installments: number;
+  balloon: number;
+  totalBalloons: number;
+}
 
 const recalculateUnitTotals = async (unitId: string) => {
   const unit = await UnitInformation.findById(unitId);
@@ -31,38 +43,92 @@ const recalculateUnitTotals = async (unitId: string) => {
   await unit.save();
 };
 
-export const createPayment = async (req: Request, res: Response) => {
-  try {
-    const { customer, unitInformation, installments } = req.body;
+const buildInstallmentPayments = (
+  customer: mongoose.Types.ObjectId,
+  unitInformation: mongoose.Types.ObjectId,
+  payload: InstallmentsPayload,
+) => {
+  const payments: Partial<IPayment>[] = [];
 
-    if (!Array.isArray(installments) || installments.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Installments array is required",
-      });
-    }
+  const balloonInterval = payload.installments / payload.totalBalloons;
 
-    const unit = await UnitInformation.findById(unitInformation);
+  const balloonPositions = new Set(
+    Array.from({ length: payload.totalBalloons }, (_, i) => Math.round((i + 1) * balloonInterval)),
+  );
 
-    if (!unit) {
-      return res.status(404).json({
-        success: false,
-        message: "Unit information not found",
-      });
-    }
+  let currentDate = new Date(payload.dueDate);
+  let balloonCount = 0;
 
-    const payments = await Payment.insertMany(
-      installments.map((installment: any) => ({
+  for (let installmentCount = 1; installmentCount <= payload.installments; installmentCount++) {
+    payments.push({
+      customer,
+      unitInformation,
+      purpose: `Installment #${installmentCount}`,
+      dueAmount: payload.dueAmount,
+      remainingAmount: payload.dueAmount,
+      dueDate: currentDate,
+    });
+
+    currentDate = addMonths(currentDate, 1);
+
+    if (balloonPositions.has(installmentCount)) {
+      balloonCount += 1;
+
+      payments.push({
         customer,
         unitInformation,
-        purpose: installment.purpose,
-        dueAmount: installment.dueAmount,
-        remainingAmount: installment.dueAmount,
-        dueDate: installment.dueDate,
-      })),
+        purpose: `Balloon Payment #${balloonCount}`,
+        dueAmount: payload.balloon,
+        remainingAmount: payload.balloon,
+        dueDate: currentDate,
+      });
+
+      currentDate = addMonths(currentDate, 1);
+    }
+  }
+
+  return payments;
+};
+
+export const createPayment = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const unit = await UnitInformation.findById(id);
+
+    if (!unit) {
+      return res.status(statusCodes.NOT_FOUND).json({
+        success: false,
+        message: "Unit not found",
+      });
+    }
+
+    if (req.body.type === "Custom") {
+      const payment = await Payment.create({
+        customer: unit.customer,
+        unitInformation: unit._id,
+        purpose: req.body.purpose,
+        dueAmount: req.body.dueAmount,
+        remainingAmount: req.body.dueAmount,
+        dueDate: req.body.dueDate,
+      });
+
+      return res.status(statusCodes.CREATED).json({
+        success: true,
+        message: "Payment added successfully",
+        data: [payment],
+      });
+    }
+
+    const paymentsToCreate = buildInstallmentPayments(
+      unit.customer as mongoose.Types.ObjectId,
+      unit._id as mongoose.Types.ObjectId,
+      req.body as InstallmentsPayload,
     );
 
-    return res.status(201).json({
+    const payments = await Payment.insertMany(paymentsToCreate);
+
+    return res.status(statusCodes.CREATED).json({
       success: true,
       message: "Installments created successfully",
       data: payments,
@@ -77,9 +143,9 @@ export const createPayment = async (req: Request, res: Response) => {
 
 export const getPaymentsByUnit = async (req: Request, res: Response) => {
   try {
-    const { unitId } = req.params;
+    const { id } = req.params;
 
-    const payments = await Payment.find({ unitInformation: unitId }).sort({ dueDate: 1 });
+    const payments = await Payment.find({ unitInformation: id }).sort({ dueDate: 1 });
 
     return res.status(200).json({
       success: true,
