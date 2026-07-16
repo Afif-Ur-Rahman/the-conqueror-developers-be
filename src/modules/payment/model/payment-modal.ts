@@ -5,9 +5,8 @@ export interface IPayment extends Document {
   unitInformation: mongoose.Types.ObjectId;
   purpose: string;
   dueAmount: number;
-  receivedAmount?: number;
-  remainingAmount?: number;
-  paymentMethod?: string;
+  receivedAmount: number;
+  remainingAmount: number;
   dueDate: Date;
   paidDate?: Date;
 }
@@ -26,13 +25,10 @@ const paymentSchema = new mongoose.Schema<IPayment, PaymentModel>(
     dueAmount: { type: Number, required: true },
     receivedAmount: { type: Number, default: 0 },
     remainingAmount: { type: Number, default: 0 },
-    paymentMethod: { type: String, default: null },
     dueDate: { type: Date, required: true },
     paidDate: { type: Date, default: null },
   },
-  {
-    timestamps: true,
-  },
+  { timestamps: true },
 );
 
 paymentSchema.index({ customer: 1 });
