@@ -9,6 +9,7 @@ import {
   unitInformationRoutes,
   paymentRoutes,
   employeeRoutes,
+  receiptRoutes,
 } from "@/modules";
 import { authRoutes } from "@/modules/auth/routes";
 
@@ -32,5 +33,7 @@ router.use("/api/customers", customerRoutes);
 router.use("/api/unit-information", unitInformationRoutes);
 
 router.use("/api/payments", paymentRoutes);
+
+router.use("/api/receipts", receiptRoutes);
 
 export { router as routes };

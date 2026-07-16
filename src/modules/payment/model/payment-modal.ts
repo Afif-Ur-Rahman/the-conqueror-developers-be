@@ -26,7 +26,7 @@ const paymentSchema = new mongoose.Schema<IPayment, PaymentModel>(
     receivedAmount: { type: Number, default: 0 },
     remainingAmount: { type: Number, default: 0 },
     dueDate: { type: Date, required: true },
-    paidDate: { type: Date, default: null },
+    paidDate: { type: Date, default: undefined },
   },
   { timestamps: true },
 );
