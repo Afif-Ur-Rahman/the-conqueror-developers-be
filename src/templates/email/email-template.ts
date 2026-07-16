@@ -3,7 +3,6 @@ interface OtpEmailTemplateOptions {
   recipientName?: string;
   headline?: string;
   subheading?: string;
-  copyUrl?: string;
   supportEmail?: string;
   brandName?: string;
   footerNote?: string;
@@ -30,7 +29,7 @@ export const otpEmailTemplate = (options: OtpEmailTemplateOptions) => {
     subheading = "Use the code below.",
     supportEmail = "theconqueror.office@gmail.com",
     brandName = "The Conqueror Developers",
-    footerNote = "If you didn’t request this, please ignore this email or contact support so we can keep your account safe.",
+    footerNote = "If you didn’t request this, please ignore this email.",
   } = options;
 
   const previewText = `Your ${brandName} verification code is ${otp}.`;
@@ -70,7 +69,7 @@ export const otpEmailTemplate = (options: OtpEmailTemplateOptions) => {
               <tr>
                 <td style="text-align:center;">
                   <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:${BASE_STYLES.accent};margin-bottom:12px;">
-                    ${brandName} onboarding
+                    ${brandName}
                   </div>
                   <h1 style="font-size:28px;margin:0 0 12px 0;color:${BASE_STYLES.textPrimary};">
                     ${headline}
@@ -119,8 +118,8 @@ export const otpEmailTemplate = (options: OtpEmailTemplateOptions) => {
                   </p>
                   <ul style="padding-left:20px;margin:0;color:${BASE_STYLES.textSecondary};line-height:1.7;font-size:14px;">
                     <li>Verify your email with the code above.</li>
-                    <li>Set up your restaurant profile and team roles.</li>
-                    <li>Launch curated experiences for your guests.</li>
+                    <li>Set up new password.</li>
+                    <li>Login with new password.</li>
                   </ul>
                 </td>
               </tr>

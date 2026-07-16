@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 
 import { sendEmail } from "@/config";
-import { SERVER_URL } from "@/constants/env";
 import { statusCodes } from "@/constants/statusCodes";
-import { IUser, User } from "@/modules/user/model";
+import { User } from "@/modules/user/model";
 import { otpService } from "@/services";
 import { otpEmailTemplate } from "@/templates";
 import { catchAsync } from "@/utils/catch-async";
@@ -19,7 +18,7 @@ export const forgotPasswordOtp = catchAsync(
     }
 
     try {
-      const user = (await User.findOne(email)) as IUser;
+      const user = await User.findOne({ email, isDeleted: false });
       if (!user) {
         return res.status(statusCodes.NOT_FOUND).json({ message: "User not found" });
       }
@@ -34,11 +33,10 @@ export const forgotPasswordOtp = catchAsync(
         subject: "Password Reset OTP",
         html: otpEmailTemplate({
           otp,
-          recipientName: email.split("@")[0],
-          headline: "Use this code to reset your password",
+          recipientName: user.username || email.split("@")[0],
+          headline: "Use this OTP to reset your password",
           subheading:
             "Enter the OTP below to prove it's really you before creating a new password.",
-          copyUrl: `${SERVER_URL}/auth/password-reset?email=${encodeURIComponent(email)}&otp=${otp}`,
         }),
       };
       await sendEmail(mailInfo);
@@ -60,7 +58,7 @@ export const validateOtp = catchAsync(async (req: Request, res: Response): Promi
   }
 
   try {
-    const user = (await User.findOne(email)) as IUser;
+    const user = await User.findOne({ email, isDeleted: false });
     if (!user) {
       return res.status(statusCodes.NOT_FOUND).json({ message: "User not found" });
     }
@@ -87,7 +85,7 @@ export const resetPassword = catchAsync(async (req: Request, res: Response): Pro
   }
 
   try {
-    const user = (await User.findOne(email)) as IUser;
+    const user = await User.findOne({ email, isDeleted: false });
     if (!user) {
       return res.status(statusCodes.NOT_FOUND).json({ message: "User not found" });
     }
