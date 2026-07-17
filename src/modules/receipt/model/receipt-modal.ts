@@ -4,6 +4,7 @@ export const PAYMENT_METHODS = ["Cash", "Online"] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export interface IReceipt extends Document {
+  createdBy: mongoose.Types.ObjectId;
   payment: mongoose.Types.ObjectId;
   customer: mongoose.Types.ObjectId;
   unitInformation: mongoose.Types.ObjectId;
@@ -16,6 +17,7 @@ type ReceiptModel = Model<IReceipt, object>;
 
 const receiptSchema = new mongoose.Schema<IReceipt, ReceiptModel>(
   {
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     payment: { type: mongoose.Schema.Types.ObjectId, ref: "Payment", required: true },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", required: true },
     unitInformation: {

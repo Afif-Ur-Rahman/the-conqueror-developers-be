@@ -3,11 +3,13 @@ import mongoose from "mongoose";
 
 import { statusCodes } from "@/constants";
 import { Payment } from "@/modules/payment/model";
+import { UnitInformation } from "@/modules/unit-information/model";
 
 import { Receipt } from "../model";
 import { recalculatePaymentTotals } from "../utils";
 
 export const createReceipt = async (req: Request, res: Response) => {
+  const user = req.user;
   const { paymentId } = req.params;
   const { receivedAmount, paymentMethod, paidDate } = req.body;
 
@@ -17,6 +19,7 @@ export const createReceipt = async (req: Request, res: Response) => {
   }
 
   const receipt = await Receipt.create({
+    createdBy: user?._id,
     payment: payment._id,
     customer: payment.customer,
     unitInformation: payment.unitInformation,
@@ -26,11 +29,12 @@ export const createReceipt = async (req: Request, res: Response) => {
   });
 
   const updatedPayment = await recalculatePaymentTotals(payment._id as mongoose.Types.ObjectId);
+  const updatedUnit = await UnitInformation.findById(payment.unitInformation);
 
   return res.status(statusCodes.CREATED).json({
     success: true,
     message: "Receipt Recorded",
-    data: { receipt, payment: updatedPayment },
+    data: { receipt, payment: updatedPayment, unit: updatedUnit },
   });
 };
 
@@ -71,6 +75,7 @@ export const deleteReceipt = async (req: Request, res: Response) => {
 
 export const getReceiptsByPayment = async (req: Request, res: Response) => {
   const { paymentId } = req.params;
-  const receipts = await Receipt.find({ payment: paymentId }).sort({ paidDate: -1 });
+  const receipts = await Receipt.find({ payment: paymentId }).populate("createdBy");
+
   return res.status(statusCodes.OK).json({ success: true, data: receipts });
 };
