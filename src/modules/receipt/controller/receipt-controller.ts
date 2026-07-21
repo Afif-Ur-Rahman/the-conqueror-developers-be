@@ -1,9 +1,13 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 
+import { sendEmail } from "@/config";
 import { statusCodes } from "@/constants";
+import { Customer } from "@/modules/customers/model";
 import { Payment } from "@/modules/payment/model";
 import { UnitInformation } from "@/modules/unit-information/model";
+import { receiptConfirmationTemplate } from "@/templates";
+import { formatPrice } from "@/utils";
 
 import { Receipt } from "../model";
 import { recalculatePaymentTotals } from "../utils";
@@ -30,6 +34,28 @@ export const createReceipt = async (req: Request, res: Response) => {
 
   const updatedPayment = await recalculatePaymentTotals(payment._id as mongoose.Types.ObjectId);
   const updatedUnit = await UnitInformation.findById(payment.unitInformation);
+
+  const customer = await Customer.findById(payment.customer);
+  if (customer?.email && updatedUnit) {
+    sendEmail({
+      to: customer.email,
+      subject: "Payment Receipt - The Conqueror Developers",
+      html: receiptConfirmationTemplate({
+        customerName: customer.name,
+        receivedAmount: formatPrice(receivedAmount),
+        paymentMethod,
+        paidDate: new Date(paidDate).toLocaleDateString(),
+        building: updatedUnit.building,
+        block: updatedUnit.block,
+        unit: updatedUnit.unit,
+        totalPrice: formatPrice(updatedUnit.price),
+        totalReceived: formatPrice(updatedUnit.receivedAmount ?? 0),
+        outstandingAmount: formatPrice(updatedUnit.outstandingAmount ?? 0),
+        overDueAmount: updatedUnit.overDueAmount,
+        holdAmount: updatedUnit.holdAmount,
+      }),
+    }).catch((err) => console.error("Failed to send receipt email:", err));
+  }
 
   return res.status(statusCodes.CREATED).json({
     success: true,
