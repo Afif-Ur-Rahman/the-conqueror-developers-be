@@ -5,6 +5,7 @@ export interface ILead extends Document {
   name: string;
   phone: string;
   message: string;
+  isContacted: boolean;
 }
 
 type LeadModel = Model<ILead, object>;
@@ -29,6 +30,10 @@ const leadSchema = new mongoose.Schema<ILead, LeadModel>(
     message: {
       type: String,
       required: [true, "Message is required"],
+    },
+    isContacted: {
+      type: Boolean,
+      default: false,
     },
   },
   {
