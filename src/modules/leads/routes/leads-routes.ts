@@ -9,6 +9,6 @@ const router = Router();
 
 router.get("/", authMiddleware, catchAsync(getLeads));
 router.post("/", catchAsync(createLead));
-router.put("/:id", catchAsync(updateLead));
+router.put("/:id", authMiddleware, catchAsync(updateLead));
 
 export { router as leadsRoutes };
